@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study Circle</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f4ee;--card:#fff;--ink:#1d2a24;--mut:#6a766f;--line:#e2ded2;--pri:#1f7a4d;--pri2:#e6f3ec;--acc:#e8a317;--bad:#c0452f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a17;--card:#1d2621;--ink:#eaf1ec;--mut:#98a69e;--line:#2c3832;--pri:#4cc084;--pri2:#223a2d;--acc:#f0b83a;--bad:#e8785f}}
+:root[data-theme="dark"]{--bg:#141a17;--card:#1d2621;--ink:#eaf1ec;--mut:#98a69e;--line:#2c3832;--pri:#4cc084;--pri2:#223a2d;--acc:#f0b83a;--bad:#e8785f}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:14px 18px;max-width:900px;margin:auto}
+header h1{font-size:20px;margin:0;flex:1}header span{color:var(--pri)}
+.pts{background:var(--pri2);color:var(--pri);padding:4px 12px;border-radius:99px;font-weight:600}
+nav{display:flex;gap:6px;overflow-x:auto;padding:0 18px 8px;max-width:900px;margin:auto}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:99px;cursor:pointer;white-space:nowrap;font:inherit}
+nav button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+main{max-width:900px;margin:auto;padding:8px 18px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+h2{font-size:17px;margin:0 0 10px}.mut{color:var(--mut);font-size:13px}
+.big{font-size:44px;font-weight:700;line-height:1}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.mem{border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.mem.done{background:var(--pri2);border-color:var(--pri)}
+.av{width:38px;height:38px;border-radius:50%;background:var(--pri);color:#fff;display:inline-grid;place-items:center;font-weight:700;margin-bottom:4px}
+.btn{background:var(--pri);color:#fff;border:0;padding:9px 16px;border-radius:10px;cursor:pointer;font:inherit;font-weight:600}
+.btn.ghost{background:transparent;color:var(--pri);border:1px solid var(--pri)}
+input,select,textarea{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);max-width:100%}
+input[type=text],textarea{flex:1;min-width:140px}
+.bar{height:10px;background:var(--line);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--pri)}
+.task{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.task.d span{text-decoration:line-through;color:var(--mut)}
+.tag{font-size:12px;background:var(--pri2);color:var(--pri);padding:2px 9px;border-radius:99px}
+.timer{font-size:64px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin:6px 0}
+.lb{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.lb b:first-child{width:24px}.lb .n{flex:1}.me{color:var(--pri);font-weight:700}
+.ans{margin:8px 0 0 12px;padding-left:10px;border-left:3px solid var(--pri2);color:var(--mut)}
+.week{display:flex;gap:6px}.week i{width:26px;height:26px;border-radius:7px;background:var(--line);display:grid;place-items:center;font-size:11px;font-style:normal}
+.week i.on{background:var(--pri);color:#fff}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;opacity:0;transition:.3s;pointer-events:none}
+.toast.s{opacity:1}
+
+.auth{max-width:420px;margin:30px auto}.auth input{width:100%;margin-bottom:8px}.auth .row{justify-content:space-between}
+a.lnk{color:var(--pri);cursor:pointer;text-decoration:underline;background:none;border:0;font:inherit}
+.btn.sm{padding:4px 10px;font-size:13px}.code{font:700 20px ui-monospace,monospace;letter-spacing:2px;background:var(--pri2);color:var(--pri);padding:4px 12px;border-radius:8px}
+.banner{background:var(--acc);color:#1d2a24;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center}.banner span{flex:1}
+.week i.today{outline:2px solid var(--acc)}a.btn{text-decoration:none;display:inline-block}
+</style></head><body>
+<header><h1>Study <span>Circle</span></h1><div class="pts" id="pts" style="display:none"></div><button class="btn ghost sm" id="out" style="display:none" onclick="logout()">Log out</button></header>
+<nav id="nav"></nav>
+<main id="v"></main>
+<div class="toast" id="t"></div>
+<script>
+var S={tab:"squad",user:null,squads:[],sel:0,tasks:[],posts:[],res:[],board:[],nudges:[],mode:"login"};
+var fl={g:"",s:"",k:""},tm={sec:1500,run:null,left:1500},TOKEN="";
+try{TOKEN=localStorage.getItem("sc-token")||""}catch(e){}
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function toast(m){var t=$("t");t.textContent=m;t.className="toast s";clearTimeout(toast.h);toast.h=setTimeout(function(){t.className="toast"},2200)}
+async function api(u,o){
+ o=o||{};o.headers=Object.assign(TOKEN?{Authorization:"Bearer "+TOKEN}:{},o.headers||{});
+ if(o.json){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(o.json);o.method=o.method||"POST"}
+ try{var r=await fetch(u,o),d=await r.json().catch(function(){return{}});
+  if(r.status===401&&TOKEN&&u!=="/api/login"){logout();toast("Please log in again");return null}
+  if(!r.ok){toast(d.error||"Something went wrong");return null}return d
+ }catch(e){toast("Cannot reach the server");return null}}
+function setTok(t){TOKEN=t;try{t?localStorage.setItem("sc-token",t):localStorage.removeItem("sc-token")}catch(e){}}
+var TABS=[["squad","\ud83d\udd25 Squad"],["plan","\ud83d\uddd3\ufe0f Planner"],["room","\u23f1\ufe0f Study room"],["help","\ud83e\udd1d Community"],["lib","\ud83d\udcda Library"],["rank","\ud83c\udfc6 Leaderboard"]];
+function nav(){$("nav").innerHTML=S.user?TABS.map(function(x){return'<button class="'+(S.tab==x[0]?"on":"")+'" onclick="go(\''+x[0]+'\')">'+x[1]+'</button>'}).join(""):""}
+function head(){var on=!!S.user;$("pts").style.display=on?"":"none";$("out").style.display=on?"":"none";if(on)$("pts").textContent="\u2b50 "+S.user.points+" pts"}
+async function refreshMe(){var d=await api("/api/me");if(d){S.user=d;head()}}
+async function go(t){S.tab=t;await load(t);render()}
+async function load(t){
+ if(t=="squad"){S.squads=await api("/api/squads/mine")||[];if(S.sel>=S.squads.length)S.sel=0;S.nudges=await api("/api/nudges")||[]}
+ if(t=="plan")S.tasks=await api("/api/tasks")||[];
+ if(t=="help")S.posts=await api("/api/posts")||[];
+ if(t=="lib"){var q=[];if(fl.g)q.push("grade="+fl.g);if(fl.s)q.push("subject="+encodeURIComponent(fl.s));if(fl.k)q.push("kind="+encodeURIComponent(fl.k));S.res=await api("/api/resources"+(q.length?"?"+q.join("&"):""))||[]}
+ if(t=="rank"){S.board=await api("/api/leaderboard")||[];S.squads=await api("/api/squads/mine")||[]}
+ await refreshMe()}
+
+/* ---------- auth ---------- */
+function authView(){var r=S.mode=="register";
+ return'<div class="card auth"><h2>'+(r?"Create your account":"Welcome back")+'</h2><div class="mut" style="margin-bottom:12px">Study with a squad, keep your streak alive, and share exam prep with students across Ethiopia.</div>'+
+ (r?'<input type="text" id="an" placeholder="Your name"><input type="text" id="as" placeholder="Your school (optional)">':'')+
+ '<input type="text" id="ae" placeholder="Email" autocomplete="email"><input type="password" id="ap" placeholder="Password (6+ characters)" autocomplete="'+(r?"new-password":"current-password")+'" onkeydown="if(event.key===\'Enter\')doAuth()">'+
+ '<div class="row"><button class="btn" onclick="doAuth()">'+(r?"Sign up":"Log in")+'</button><button class="lnk a" onclick="S.mode=\''+(r?"login":"register")+'\';render()" style="all:unset;color:var(--pri);cursor:pointer;text-decoration:underline">'+(r?"I already have an account":"Create an account")+'</button></div></div>'}
+async function doAuth(){var r=S.mode=="register",body={email:$("ae").value.trim(),password:$("ap").value};
+ if(r){body.name=$("an").value.trim();body.school=$("as").value.trim()}
+ var d=await api("/api/"+(r?"register":"login"),{json:body});if(!d)return;
+ setTok(d.token);await refreshMe();S.tab="squad";await load("squad");render()}
+function logout(){setTok("");S.user=null;S.squads=[];head();render()}
+
+/* ---------- squad ---------- */
+function cur(){return S.squads[S.sel]}
+function squad(){
+ var h="";
+ if(S.nudges.length)h+='<div class="banner"><span>\ud83d\udc4b '+S.nudges.map(function(n){return esc(n.from_name)}).join(", ")+' nudged you: time to study!</span><button class="btn sm" onclick="seen()">Got it</button></div>';
+ if(!S.squads.length)return h+'<div class="card"><h2>Start your squad</h2><div class="mut" style="margin-bottom:10px">A squad is up to 10 friends who check in daily. When most of you check in, the streak grows.</div><div class="row"><input type="text" id="sn" placeholder="Squad name, e.g. Blue Nile"><button class="btn" onclick="mkSquad()">Create squad</button></div></div><div class="card"><h2>Join with an invite code</h2><div class="row"><input type="text" id="jc" placeholder="Code, e.g. A1B2C3"><button class="btn" onclick="joinSquad()">Join</button></div></div>';
+ var s=cur(),me=S.user.id,c=s.checkedToday,need=s.need,ok=c>=need,mine=s.members.filter(function(m){return m.id==me})[0],done=mine&&mine.checked_in;
+ if(S.squads.length>1)h+='<div class="card row"><span class="mut">Squad:</span><select onchange="S.sel=+this.value;render()">'+S.squads.map(function(x,i){return'<option value="'+i+'" '+(i==S.sel?"selected":"")+'>'+esc(x.name)+'</option>'}).join("")+'</select></div>';
+ h+='<div class="card"><div class="row"><div><div class="mut">Squad: '+esc(s.name)+'</div><div class="big">\ud83d\udd25 '+s.streak+'</div><div class="mut">day streak \u00b7 best '+s.best+'</div></div><div style="flex:1"></div><div style="text-align:right"><b style="font-size:22px">'+c+' / '+s.members.length+'</b><div class="mut">checked in today<br>need '+need+' to keep the streak</div></div></div>';
+ h+='<div class="bar" style="margin:12px 0"><i style="width:'+Math.min(100,c/need*100)+'%"></i></div>';
+ h+='<div>'+(ok?"\u2705 Streak is safe for today. Great teamwork!":"\u23f3 "+(need-c)+" more check-in"+(need-c>1?"s":"")+" needed to keep the streak."+(done?"":" Your squad is waiting on you!"))+'</div></div>';
+ h+='<div class="card"><h2>Today\u2019s check-ins</h2><div class="grid">'+s.members.map(function(m){return'<div class="mem '+(m.checked_in?"done":"")+'"><div class="av">'+esc((m.name||"?")[0].toUpperCase())+'</div><div><b>'+esc(m.id==me?"You":m.name)+'</b></div><div class="mut">'+esc(m.school||"\u2014")+'</div><div>'+(m.checked_in?"\u2705 Done":(m.id==me?"\u2026":'<button class="btn ghost" style="padding:3px 10px" onclick="nudge('+s.id+','+m.id+')">\ud83d\udc4b Nudge</button>'))+'</div></div>'}).join("")+'</div>';
+ h+='<div class="row" style="margin-top:14px">'+(done?'<span class="tag">You checked in today</span>':'<button class="btn" onclick="checkin('+s.id+')">I finished my daily goal \u2714</button>')+'</div></div>';
+ h+='<div class="card"><h2>Invite friends</h2><div class="row"><span class="mut">Share this code:</span><span class="code">'+esc(s.invite_code)+'</span><button class="btn ghost sm" onclick="copyCode(\''+esc(s.invite_code)+'\')">Copy</button></div></div>';
+ h+='<div class="card"><h2>This week</h2><div class="week">'+["M","T","W","T","F","S","S"].map(function(d,i){var w=s.week[i];return'<i class="'+(w.on?"on ":"")+(w.today?"today":"")+'">'+d+'</i>'}).join("")+'</div></div>';
+ h+='<div class="card row"><button class="btn ghost sm" onclick="newSquadForm()">+ New squad</button><button class="btn ghost sm" onclick="joinForm()">Join another</button><button class="btn ghost sm" style="color:var(--bad);border-color:var(--bad)" onclick="leave('+s.id+')">Leave this squad</button></div>';
+ return h}
+async function mkSquad(){var n=$("sn").value.trim();if(!n)return;var d=await api("/api/squads",{json:{name:n}});if(d){toast("Squad created!");S.sel=0;await go("squad")}}
+async function joinSquad(){var c=$("jc").value.trim();if(!c)return;var d=await api("/api/squads/join",{json:{code:c}});if(d){toast("Joined "+d.name+"!");await go("squad")}}
+function newSquadForm(){var n=prompt("Name for your new squad:");if(n&&n.trim())api("/api/squads",{json:{name:n.trim()}}).then(function(d){if(d){S.sel=S.squads.length;go("squad")}})}
+function joinForm(){var c=prompt("Enter the invite code:");if(c&&c.trim())api("/api/squads/join",{json:{code:c.trim()}}).then(function(d){if(d){toast("Joined "+d.name);go("squad")}})}
+async function checkin(id){var d=await api("/api/squads/"+id+"/checkin",{method:"POST"});if(d){toast(d.newCheckin?"Checked in! +20 points":"Already checked in today");await go("squad")}}
+async function nudge(sid,uid){var d=await api("/api/squads/"+sid+"/nudge/"+uid,{method:"POST"});if(d)toast("Nudge sent \ud83d\udc4b")}
+async function seen(){await api("/api/nudges/seen",{method:"POST"});S.nudges=[];render()}
+async function leave(id){if(!confirm("Leave this squad?"))return;await api("/api/squads/"+id+"/leave",{method:"POST"});S.sel=0;await go("squad")}
+function copyCode(c){try{navigator.clipboard.writeText(c);toast("Code copied")}catch(e){toast("Code: "+c)}}
+
+/* ---------- planner ---------- */
+function plan(){
+ var d=S.tasks.filter(function(t){return t.done}).length,p=S.tasks.length?d/S.tasks.length*100:0;
+ var h='<div class="card"><h2>Daily goals</h2><div class="bar"><i style="width:'+p+'%"></i></div><div class="mut" style="margin:6px 0 10px">'+d+' of '+S.tasks.length+' done today</div>';
+ h+=S.tasks.map(function(t){return'<div class="task '+(t.done?"d":"")+'"><input type="checkbox" '+(t.done?"checked":"")+' onchange="tog('+t.id+')"><span style="flex:1">'+esc(t.title)+'</span><button class="btn ghost" onclick="del('+t.id+')">\u2715</button></div>'}).join("")||'<div class="mut">No goals yet. Add your first one below.</div>';
+ h+='<div class="row" style="margin-top:12px"><input type="text" id="nt" placeholder="e.g. Solve 15 biology questions" onkeydown="if(event.key===\'Enter\')addT()"><button class="btn" onclick="addT()">Add goal</button></div></div>';
+ return h}
+async function tog(id){var d=await api("/api/tasks/"+id,{method:"PATCH"});if(d&&d.done)toast("+5 points");await go("plan")}
+async function del(id){await api("/api/tasks/"+id,{method:"DELETE"});await go("plan")}
+async function addT(){var v=$("nt").value.trim();if(!v)return;await api("/api/tasks",{json:{title:v}});await go("plan")}
+
+/* ---------- study room ---------- */
+function fmt(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function room(){
+ var s=cur(),link=s?"https://meet.jit.si/StudyCircle-"+s.invite_code:"";
+ return'<div class="card"><h2>Focus session</h2><div class="mut">Study on your own, with your squad doing the same. No video needed.</div><div class="timer" id="tm">'+fmt(tm.left)+'</div><div class="row" style="justify-content:center"><button class="btn" onclick="tt()">'+(tm.run?"Pause":"Start")+'</button><button class="btn ghost" onclick="tr()">Reset</button><select onchange="tl(this.value)">'+[[1500,"25 min"],[2700,"45 min"],[3600,"60 min"]].map(function(o){return'<option value="'+o[0]+'" '+(tm.sec==o[0]?"selected":"")+'>'+o[1]+'</option>'}).join("")+'</select></div></div>'+
+ '<div class="card"><h2>\ud83d\udcf9 Squad meetup</h2><div class="mut">Once in a while, catch up face to face: how is studying going?</div><div class="row" style="margin-top:10px">'+(s?'<span class="tag">'+esc(s.name)+'</span><a class="btn" href="'+link+'" target="_blank" rel="noopener">Join video call</a>':'<span class="mut">Join a squad first to get your private video room.</span>')+'</div></div>';}
+function tl(v){tm.sec=+v;tm.left=+v;tp();render()}
+function tp(){clearInterval(tm.run);tm.run=null}
+function tt(){if(tm.run){tp();render();return}
+ tm.run=setInterval(async function(){tm.left--;if(tm.left<=0){tp();tm.left=tm.sec;var d=await api("/api/sessions",{method:"POST"});toast(d?"Session complete! +15 points":"Session complete!");await refreshMe();if(S.tab=="room")render();return}var e=$("tm");if(e)e.textContent=fmt(tm.left)},1000);render()}
+function tr(){tp();tm.left=tm.sec;render()}
+
+/* ---------- community ---------- */
+function help(){
+ var h='<div class="card"><h2>Ask the community</h2><div class="row"><select id="ps"><option>Maths</option><option>Physics</option><option>Chemistry</option><option>Biology</option><option>English</option></select><input type="text" id="pq" placeholder="What are you stuck on?"><button class="btn" onclick="ask()">Post</button></div></div>';
+ h+=S.posts.map(function(p){return'<div class="card"><span class="tag">'+esc(p.subject)+'</span> <b>'+esc(p.question)+'</b><div class="mut">asked by '+esc(p.by)+'</div>'+p.replies.map(function(a){return'<div class="ans"><b>'+esc(a.by)+':</b> '+esc(a.body)+'</div>'}).join("")+'<div class="row" style="margin-top:10px"><input type="text" id="r'+p.id+'" placeholder="Write an answer"><button class="btn ghost" onclick="rep('+p.id+')">Reply (+10)</button></div></div>'}).join("")||'<div class="card mut">No questions yet. Ask the first one!</div>';
+ return h}
+async function ask(){var q=$("pq").value.trim();if(!q)return;await api("/api/posts",{json:{question:q,subject:$("ps").value}});await go("help")}
+async function rep(id){var v=$("r"+id).value.trim();if(!v)return;var d=await api("/api/posts/"+id+"/replies",{json:{body:v}});if(d){toast("Thanks for helping! +10 points");await go("help")}}
+
+/* ---------- library ---------- */
+var SUBJ=["Maths","Physics","Chemistry","Biology","English"],KINDS=["Worksheet","Module exam","Test exam","National exam"];
+function opt(list,val,all){return'<option value="">'+all+'</option>'+list.map(function(x){return'<option value="'+x+'" '+(String(val)==String(x)?"selected":"")+'>'+(/grade/i.test(all)?"Grade "+x:x)+'</option>'}).join("")}
+function lib(){
+ return'<div class="card"><h2>Exam-prep library</h2><div class="mut" style="margin-bottom:8px">Worksheets, module exams and test exams shared by students from schools across Ethiopia.</div><div class="row"><select onchange="fl.g=this.value;go(\'lib\')">'+opt([9,10,11,12],fl.g,"All grades")+'</select><select onchange="fl.s=this.value;go(\'lib\')">'+opt(SUBJ,fl.s,"All subjects")+'</select><select onchange="fl.k=this.value;go(\'lib\')">'+opt(KINDS,fl.k,"All types")+'</select></div></div>'+
+ (S.res.length?S.res.map(function(x){return'<div class="card row"><div style="flex:1"><b>'+esc(x.title)+'</b><div class="mut">Grade '+x.grade+' \u00b7 '+esc(x.subject)+(x.unit?" \u00b7 "+esc(x.unit):"")+' \u00b7 shared by '+esc(x.shared_by)+' \u00b7 '+x.downloads+' downloads</div></div><span class="tag">'+esc(x.kind)+'</span><a class="btn ghost sm" href="/api/resources/'+x.id+'/download">Download</a></div>'}).join(""):'<div class="card mut">Nothing here yet. Be the first to contribute!</div>')+
+ '<div class="card"><h2>Contribute a resource</h2><div class="row"><input type="text" id="lt" placeholder="Title"><select id="lg">'+opt([9,10,11,12],12,"Grade").replace('<option value="">Grade</option>',"")+'</select><select id="ls">'+SUBJ.map(function(x){return"<option>"+x+"</option>"}).join("")+'</select><select id="lk">'+KINDS.map(function(x){return"<option>"+x+"</option>"}).join("")+'</select><input type="text" id="lu" placeholder="Unit (optional)"></div><div class="row" style="margin-top:10px"><input type="file" id="lf" accept=".pdf,.jpg,.jpeg,.png"><button class="btn" onclick="contrib()">Share (+15)</button></div><div class="mut" style="margin-top:6px">PDF, JPG or PNG, up to 10 MB.</div></div>'}
+async function contrib(){var f=$("lf").files[0],t=$("lt").value.trim();if(!t||!f){toast("Add a title and choose a file");return}
+ var fd=new FormData();fd.append("title",t);fd.append("grade",$("lg").value);fd.append("subject",$("ls").value);fd.append("kind",$("lk").value);fd.append("unit",$("lu").value);fd.append("school",(S.user&&S.user.school)||"");fd.append("file",f);
+ var d=await api("/api/resources",{method:"POST",body:fd});if(d){toast("Resource shared! +15 points");await go("lib")}}
+
+/* ---------- leaderboard ---------- */
+function rank(){var mine={};S.squads.forEach(function(s){mine[s.id]=1});
+ return'<div class="card"><h2>Squad leaderboard</h2>'+(S.board.map(function(x,i){return'<div class="lb"><b>'+(i+1)+'</b><span class="n '+(mine[x.id]?"me":"")+'">'+esc(x.name)+(mine[x.id]?" (your squad)":"")+' <span class="mut">\u00b7 '+x.members+' members</span></span><b>'+x.points+' pts</b></div>'}).join("")||'<div class="mut">No squads yet.</div>')+'<div class="mut" style="margin-top:10px">A squad\u2019s score is the total of its members\u2019 points. Points come from check-ins, goals, study sessions, helping others and sharing resources.</div></div>'}
+
+function render(){head();nav();var f={squad:squad,plan:plan,room:room,help:help,lib:lib,rank:rank};$("v").innerHTML=S.user?f[S.tab]():authView()}
+(async function(){if(TOKEN){await refreshMe();if(S.user)await load("squad")}render()})();
+</script></body></html>
