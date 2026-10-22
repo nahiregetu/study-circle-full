@@ -3,7 +3,7 @@ const express=require('express'),{Pool}=require('pg'),bcrypt=require('bcryptjs')
 multer=require('multer'),path=require('path'),fs=require('fs'),crypto=require('crypto');
 const db=new Pool({connectionString:process.env.DATABASE_URL});
 const SECRET=process.env.JWT_SECRET||'dev-secret-change-me';
-const UP=process.env.UPLOAD_DIR||'/data/uploads';fs.mkdirSync(UP,{recursive:true});
+const UP=process.env.UPLOAD_DIR||'/tmp/uploads';fs.mkdirSync(UP,{recursive:true});
 const app=express();app.use(express.json());app.use(express.static(path.join(__dirname,'public')));
 const q=(t,p)=>db.query(t,p).then(r=>r.rows);
 const wrap=f=>(a,b,n)=>Promise.resolve(f(a,b)).catch(n);
