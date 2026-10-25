@@ -151,8 +151,26 @@ app.post('/api/posts/:id/replies',auth,wrap(async(a,b)=>{
 // ---- Leaderboard (squads ranked by total member points) ----
 app.get('/api/leaderboard',wrap(async(a,b)=>b.json(await q('SELECT s.id,s.name,COALESCE(SUM(u.points),0)::int AS points,count(m.user_id)::int AS members FROM squads s LEFT JOIN members m ON m.squad_id=s.id LEFT JOIN users u ON u.id=m.user_id GROUP BY s.id ORDER BY points DESC LIMIT 20'))));
 
-app.use((e,a,b,n)=>{console.error(e.message);b.status(e.message&&/allowed|large/i.test(e.message)?400:500).json({error:e.message||'Server error'})});
+app.use((e,a,b,n)=>{
+ const why=e.message||(e.errors&&e.errors[0]&&e.errors[0].message)||e.code||e.name||'Unknown error';
+ console.error('API error on',a.method,a.path,'->',e.code||'',why,e.errors?e.errors.map(x=>x.code+' '+x.address+':'+x.port).join(', '):'');
+ const user=/allowed|large/i.test(why)?why:(e.code==='ECONNREFUSED'||e.code==='ENOTFOUND'||e.code==='ETIMEDOUT'||!DBURL?'Cannot reach the database. Check DATABASE_URL on the server.':'Server error: '+why);
+ b.status(/allowed|large/i.test(why)?400:500).json({error:user});
+});
+
+// Health check: open /api/health in the browser to see if the database is connected
+app.get('/api/health',async(a,b)=>{
+ let host='(not set)';try{host=new URL(DBURL).host}catch(e){}
+ const out={server:'ok',databaseUrlSet:!!DBURL,databaseHost:host,ssl:useSSL,database:'unknown',tablesReady:false};
+ try{await db.query('SELECT 1');out.database='connected';out.tablesReady=(await db.query("SELECT to_regclass('public.users') AS t")).rows[0].t!==null}
+ catch(e){out.database='FAILED: '+(e.message||(e.errors&&e.errors[0]&&e.errors[0].message)||e.code||e.name)}
+ b.json(out);
+});
+app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('Study Circle API on :'+(process.env.PORT||3000)));
 (async()=>{
- for(let i=0;i<20;i++){try{await db.query(fs.readFileSync(path.join(__dirname,'schema.sql'),'utf8'));break}catch(e){console.log('Waiting for database...',e.message);await new Promise(r=>setTimeout(r,2000))}}
- app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('Study Circle API on :'+(process.env.PORT||3000)));
+ const sql=fs.readFileSync(path.join(__dirname,'schema.sql'),'utf8');
+ for(let i=1;;i++){
+  try{await db.query(sql);console.log('Database ready, tables checked');break}
+  catch(e){console.error('Database not ready (try '+i+'):',e.message||(e.errors&&e.errors[0]&&e.errors[0].message)||e.code||e.name);await new Promise(r=>setTimeout(r,Math.min(2000*i,15000)))}
+ }
 })();
