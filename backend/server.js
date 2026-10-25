@@ -1,9 +1,13 @@
-require('dotenv').config();
 const express=require('express'),{Pool}=require('pg'),bcrypt=require('bcryptjs'),jwt=require('jsonwebtoken'),
 multer=require('multer'),path=require('path'),fs=require('fs'),crypto=require('crypto');
-const db=new Pool({connectionString:process.env.DATABASE_URL});
+const DBURL=process.env.DATABASE_URL||'';
+// Hosted databases (Render, Neon, Railway...) require SSL; local/Docker ones do not. Override with PGSSL=false|true.
+const useSSL=process.env.PGSSL?process.env.PGSSL==='true':!/@(localhost|127\.0\.0\.1|db)[:\/]/.test(DBURL);
+const db=new Pool({connectionString:DBURL,ssl:useSSL?{rejectUnauthorized:false}:false});
+if(!DBURL)console.error('DATABASE_URL is not set!');
 const SECRET=process.env.JWT_SECRET||'dev-secret-change-me';
-const UP=process.env.UPLOAD_DIR||'/tmp/uploads';fs.mkdirSync(UP,{recursive:true});
+let UP=process.env.UPLOAD_DIR||'/data/uploads';
+try{fs.mkdirSync(UP,{recursive:true})}catch(e){UP=path.join(require('os').tmpdir(),'uploads');fs.mkdirSync(UP,{recursive:true});console.warn('Upload dir not writable, using',UP,'(files will be lost on restart)')}
 const app=express();app.use(express.json());app.use(express.static(path.join(__dirname,'public')));
 const q=(t,p)=>db.query(t,p).then(r=>r.rows);
 const wrap=f=>(a,b,n)=>Promise.resolve(f(a,b)).catch(n);
@@ -149,6 +153,6 @@ app.get('/api/leaderboard',wrap(async(a,b)=>b.json(await q('SELECT s.id,s.name,C
 
 app.use((e,a,b,n)=>{console.error(e.message);b.status(e.message&&/allowed|large/i.test(e.message)?400:500).json({error:e.message||'Server error'})});
 (async()=>{
- for(let i=0;i<20;i++){try{await db.query(fs.readFileSync(path.join(__dirname,'schema.sql'),'utf8'));break}catch(e){console.log('Waiting for database...');await new Promise(r=>setTimeout(r,2000))}}
- app.listen(3000,()=>console.log('Study Circle API on :3000'));
+ for(let i=0;i<20;i++){try{await db.query(fs.readFileSync(path.join(__dirname,'schema.sql'),'utf8'));break}catch(e){console.log('Waiting for database...',e.message);await new Promise(r=>setTimeout(r,2000))}}
+ app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('Study Circle API on :'+(process.env.PORT||3000)));
 })();
