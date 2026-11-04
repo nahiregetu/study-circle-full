@@ -1,48 +1,82 @@
-# Study Circle (full app)
+# Study Circle
 
-Frontend (the Study Circle design) + Node.js/Express API + PostgreSQL, all in one `docker compose`.
+**A study-accountability platform for Ethiopian high school students.**
+Study with a squad, keep your streak alive, and share exam-prep material with students from schools across the country.
 
-## Run it
+- **Live demo:** https://study-circle-full.onrender.com
+  *(Hosted on a free plan, so the first load can take 30-60 seconds to wake up.)*
+- **Video presentation (5 min):** PASTE_YOUR_VIDEO_LINK_HERE
+
+---
+
+## Purpose
+
+Many students prepare for national exams alone. It is easy to lose motivation, and good practice material is hard to find. Study Circle solves both problems:
+
+1. **Accountability:** small squads of up to 10 friends check in daily. When most of the squad checks in, the squad's streak grows, so nobody wants to be the one who breaks it.
+2. **Shared resources:** students upload and download past exams, model exams and worksheets, organised by grade and subject.
+
+## Main features
+
+| Feature | What it does |
+|---|---|
+| **Accounts** | Sign up and log in. Passwords are hashed (bcrypt) and sessions use JWT tokens. |
+| **Squads** | Create a squad, invite friends with a 6-character code, join or leave. |
+| **Daily check-in and streak** | A squad's streak grows on days when at least 80% of members check in. Best streak is tracked. |
+| **Nudges** | Remind a squad mate who has not checked in yet. |
+| **Planner** | Personal daily goals with a progress bar. |
+| **Study room** | Focus timer (25/45/60 min) that awards points, plus a private video-call room for each squad. |
+| **Community Q&A** | Ask questions by subject and answer other students. |
+| **Exam library** | Upload PDF/JPG/PNG files (max 10 MB), filter by grade, subject and type, and download. |
+| **Points and leaderboard** | Points for check-ins, goals, study sessions, helping others and sharing resources. Squads are ranked by total points. |
+
+## Technology
+
+- **Frontend:** HTML, CSS and vanilla JavaScript (single page, works on phones, light and dark mode)
+- **Backend:** Node.js and Express (REST API)
+- **Database:** PostgreSQL
+- **Hosting:** Render (web service) and Neon (database)
+
+## Project structure
+
+```
+backend/
+  server.js        API and file uploads
+  schema.sql       database tables (created automatically on start)
+  public/index.html   the whole frontend
+docker-compose.yml   run everything locally with one command
+```
+
+## Run it locally
+
+With Docker:
+
 ```
 docker compose up --build
 ```
-Open http://localhost:3000, create an account, create a squad, and share the invite code with friends.
 
-## What works (all real, saved in the database)
-- Sign up / log in (JWT, bcrypt-hashed passwords)
-- Squads: create, join by invite code (max 10), leave, daily check-in, nudge a squad mate
-- Streak: grows on days when at least 80% of the squad checks in; best streak tracked
-- Planner: personal daily goals (+5 pts when done)
-- Study room: focus timer (+15 pts on completion) and a private Jitsi video room per squad
-- Community Q&A: ask and answer (+10 pts per reply)
-- Exam library: upload PDF/JPG/PNG (max 10 MB), filter by grade/subject/type, download counter
-- Leaderboard: squads ranked by total member points
+Then open http://localhost:3000.
 
-## Before going live
-1. Change `JWT_SECRET` in `docker-compose.yml` to a long random string.
+Without Docker (needs Node.js and PostgreSQL):
 
-2. Project Developer
+```
+cd backend
+npm install
+# set DATABASE_URL, UPLOAD_DIR and JWT_SECRET, then:
+node server.js
+```
 
-Name: Nahire Getu
+Environment variables: `DATABASE_URL` (PostgreSQL connection string), `JWT_SECRET` (long random text), `UPLOAD_DIR` (folder for uploaded files), `PORT` (optional).
 
-Role: Sole Developer and Project Creator
+## Team
 
-Responsibilities:
+| Full name | CTC ID | Role |
+|---|---|---|
+| Nahire Getu Regassa | CTC-3016-26 | Idea, design, frontend, backend, database, deployment |
 
-- Project Concept and Planning: Developed the Study Circle concept for Ethiopian Grade 9–12 students.
-- Frontend Development: Built the website interface.
-- Backend Development: Worked on the server-side functionality and API endpoints.
-- Database Management: Set up the PostgreSQL database.
-- Authentication: Implemented user registration and login functionality.
-- Deployment: Worked on deploying the website online.
-- Testing and Debugging: Tested the application and worked on resolving issues.
+## Known limitations and future work
+Uploaded files on the free hosting plan are cleared when the server restarts. A production version would store them in cloud storage.
+Planned next: push notifications for nudges, a mobile app, and more subjects and grades.
 
-About the Project
-
-Study Circle is a web-based study platform designed to help Ethiopian secondary school students organize their studies, build consistent study habits, track their progress, and motivate one another through collaborative learning.
-3. Change the Postgres password (in both `db` and `DATABASE_URL`).
-4. Put it behind HTTPS (e.g. Caddy or Nginx) on a VPS; data lives in the `pgdata` and `uploads` Docker volumes, so back them up.
-
-## Project layout
-- `backend/server.js` API, `backend/schema.sql` tables (created automatically on start)
-- `backend/public/index.html` the whole frontend (served by the API, so no CORS setup)
+- Uploaded files on the free hosting plan are cleared when the server restarts. A production version would store them in cloud storage.
+- Planned next: push notifications for nudges, a mobile app, and more subjects and grades.
