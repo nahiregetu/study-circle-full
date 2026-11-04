@@ -5,7 +5,7 @@ Study with a squad, keep your streak alive, and share exam-prep material with st
 
 - **Live demo:** https://study-circle-full.onrender.com
   *(Hosted on a free plan, so the first load can take 30-60 seconds to wake up.)*
-- **Video presentation (5 min):** PASTE_YOUR_VIDEO_LINK_HERE
+- **Video presentation (5 min):** https://1drv.ms/b/c/000ff3384976cc87/IQCSFti8--VmRKYpE2TaPn0FAWZydaEYq0VaW-g8ysB7QyA?e=fPU78V
 
 ---
 
