@@ -1,6 +1,6 @@
 # Study Circle
 
-**A study-accountability platform for Ethiopian high school students.**
+**A study-accountability platform for Ethiopian high school students.** 
 Study with a squad, keep your streak alive, and share exam-prep material with students from schools across the country.
 
 - **Live demo:** https://study-circle-full.onrender.com
